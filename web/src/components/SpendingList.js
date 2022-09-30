@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FiDollarSign } from "react-icons/fi";
+import { FiDollarSign, FiEdit2, FiXOctagon } from "react-icons/fi";
 import { DateTime } from "luxon";
 import Loader from "./Loader";
 import {
@@ -10,14 +10,25 @@ import {
   Amount,
   AmountWrapper,
 } from "../styles/ComponentStyles";
+import EditForm from "./EditForm";
 
-export default function SpendingList({ spendings, setSpendings }) {
+export default function SpendingList({ spendings, setSpendings, curr, ordering }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+
+  const del = async (val) => {
+    await fetch(`/api/spending-delete/${val}`, {
+      method: "DELETE",
+      headers: {"Content-Type": "application/json"}
+    })
+    window.location.reload()
+  }
+
 
   useEffect(() => {
     setLoading(true);
-    fetch(`http://localhost:5000/spendings`, {
+    fetch(`/api/spendings-list/?search=${curr}&ordering=${ordering}`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     })
@@ -40,7 +51,7 @@ export default function SpendingList({ spendings, setSpendings }) {
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [curr, ordering]);
 
   if (loading) return <Loader />;
 
@@ -63,6 +74,7 @@ export default function SpendingList({ spendings, setSpendings }) {
       {spendings.length > 0 &&
         spendings.map((spending) => (
           <Spending key={spending.id}>
+            {showEdit && <EditForm data={spending} />}
             <IconWrapper>
               <FiDollarSign color="var(--color-blue)" />
             </IconWrapper>
@@ -76,9 +88,19 @@ export default function SpendingList({ spendings, setSpendings }) {
             </TextWrapper>
             <AmountWrapper>
               <Amount currency={spending.currency}>
-                {(spending.amount / 100).toFixed(2)}
+                {(spending.amount).toFixed(2)}
               </Amount>
             </AmountWrapper>
+            <IconWrapper>
+              <button onClick={() => setShowEdit(true)}>
+                <FiEdit2/>
+              </button>
+            </IconWrapper>
+            <IconWrapper>
+              <button onClick={(e) => del(e.target.id)}>
+                <FiXOctagon id={spending.id} />
+              </button>
+            </IconWrapper>
           </Spending>
         ))}
     </>

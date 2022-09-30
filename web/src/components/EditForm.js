@@ -3,17 +3,17 @@ import { InputStyles } from '../styles/InputStyles';
 import { SelectStyles } from '../styles/SelectStyles';
 import { FormStyles } from '../styles/ComponentStyles';
 
-export default function Form() {
+export default function EdditForm(props) {
   const [state, setState] = useState({
-    description: '',
-    amount: 0,
-    currency: 'USD',
+    description: props.data.description,
+    amount: props.data.amount,
+    currency: props.data.currency,
   });
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    await fetch("/api/spending-create/", {
-      method: "POST",
+    await fetch(`/api/spending-update/${props.data.id}/`, {
+      method: "PUT",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify({
         description: state.description,
@@ -23,15 +23,15 @@ export default function Form() {
     });
     window.location.reload()
     setState({
-      description: "",
-      amount: 0,
-      currency: "USD",
+      description: props.data.description,
+      amount: props.data.amount,
+      currency: props.data.currency,
     })
   }
 
   function handleChange(e) {
     const { name, value } = e.target;
-
+    
     setState({
       ...state,
       [name]: value,
